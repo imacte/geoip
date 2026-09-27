@@ -1,58 +1,3 @@
-> **本仓库是上游的 fork，用于个人自建的 geo 规则流水线。**
->
-> 三个仓的分工：
->
-> | 仓库 | 角色 |
-> |---|---|
-> | [`imacte/domain-list-custom`](https://github.com/imacte/domain-list-custom) | `geosite.dat` 的**编译器** + 自定义域名列表（`custom-data/`） |
-> | [`imacte/geoip`](https://github.com/imacte/geoip) | **IP 数据**（`geoip.dat`、`Country.mmdb`、`geoip-only-cn-private.dat`） |
-> | [`imacte/v2ray-rules-dat`](https://github.com/imacte/v2ray-rules-dat) | **主力产线**：取上面两者的产物 + 外部列表，发布 `geoip.dat` + `geosite.dat` |
->
-> 客户端（v2rayN 等）只需要填一个地址：
-> `https://raw.githubusercontent.com/imacte/v2ray-rules-dat/release/{0}.dat`
->
-> ---
-## 本 fork 做了什么
-
-- **代码与 `config.json` 与上游保持一致**，没有功能改动；只是自己跑一遍 Actions，产出独立的 `geoip.dat` 等文件。
-- 唯一需要的配置：Repository secret **`MAXMIND_GEOLITE2_LICENSE`**（MaxMind 免费账号的 license key），工作流第一步用它下载 GeoLite2 数据。
-- 工作流文件 `.github/workflows/build.yml` **未做任何修改**。
-
-## 产物
-
-Release 包含：`geoip.dat`、`geoip-only-cn-private.dat`、`Country.mmdb`、`Country-without-asn.mmdb`、`Country-asn.mmdb`、`Country-only-cn-private.mmdb`、`geoip-asn.dat`、`cn.dat`、`private.dat` 及各自的 `.sha256sum`。
-
-触发：push / 手动 Run workflow / **每周四 00:00 UTC**。
-
-列表构成：约 260 个列表 = 全部国家/地区代码 + `cloudflare`、`cloudfront`、`facebook`、`fastly`、`google`、`netflix`、`private`、`telegram`、`tor`、`twitter`。
-
-其中 `geoip:cn` 的取法是：先用 `cutter` 删掉 MaxMind 的 `cn`，再用 [gaoyifan/china-operator-ip](https://github.com/gaoyifan/china-operator-ip) 的大陆运营商网段补回来——即“中国运营商实际持有的 IP 段”，而非 MaxMind 的地理归属。
-
-## 被谁消费
-
-[`imacte/v2ray-rules-dat`](https://github.com/imacte/v2ray-rules-dat) 的构建会**优先取本仓的 Release** 作为 `geoip.dat`，取不到才回退 `Loyalsoldier/geoip`。
-
-⚠️ 不要拿本仓的 `release` **分支**当来源：fork 之后长期没跑过，分支里可能仍是旧文件，而下载会“成功”；请用 **Release**（`releases/latest/download/geoip.dat`）。
-
----
-<h1 align="center">GeoIP 增强版：自由定制多种格式 GeoIP 文件</h1>
-
-<p align="center">
-  <img src="./assets/hero.png" alt="GeoIP project hero image">
-</p>
-
-<div align="center">
-
-<a href="https://trendshift.io/repositories/5833" target="_blank"><img src="https://trendshift.io/api/badge/repositories/5833" alt="Loyalsoldier%2Fgeoip | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
-
-</div>
-
-<div align="center">
-<a href="https://deepwiki.com/Loyalsoldier/geoip" target="_blank"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki badge"></a> <a href="https://www.jsdelivr.com/package/gh/Loyalsoldier/geoip" target="_blank"><img src="https://data.jsdelivr.com/v1/package/gh/Loyalsoldier/geoip/badge?style=rounded" alt="jsdelivr stats badge"></a>
-
-<a href="https://shields.io" target="_blank"><img src="https://img.shields.io/github/downloads/Loyalsoldier/geoip/total?logo=github" alt="GitHub Downloads badge (all assets, all releases)"></a> <a href="https://shields.io" target="_blank"><img src="https://img.shields.io/github/downloads/Loyalsoldier/geoip/latest/total?logo=github" alt="GitHub Downloads badge (all assets, latest release)"></a>
-</div>
-
 ## 名词解析
 
 **GeoIP**，意为 ***IP geographic location***，即 IP 地址所对应的地理位置信息，例如所属的国家、地区等。GeoIP 数据文件则存储着 IP 地址所对应的地理位置信息。
@@ -1345,6 +1290,14 @@ false
 >> exit
 ```
 
+## 构建与产物
+
+- 需要配置 Repository secret **`MAXMIND_GEOLITE2_LICENSE`**（MaxMind 免费账号的 license key），工作流用它下载 GeoLite2 数据
+- 构建触发：push 到 `master`、手动 Run workflow、以及**每周四 00:00 UTC** 的定时任务
+- Release 产物：`geoip.dat`、`geoip-only-cn-private.dat`、`Country.mmdb`、`Country-without-asn.mmdb`、`Country-asn.mmdb`、`Country-only-cn-private.mmdb`、`geoip-asn.dat`、`cn.dat`、`private.dat` 及各自的 `.sha256sum`
+- 被 [@imacte/v2ray-rules-dat](https://github.com/imacte/v2ray-rules-dat) 消费：其构建会优先取本仓库 Release 中的 `geoip.dat`
+
+> 引用本仓库的 `geoip.dat` 时请使用 **Release**（`releases/latest/download/geoip.dat`），不要使用 `release` 分支——分支内容可能长期未更新，而下载依然会“成功”。
 ## 使用本项目的项目
 
 - [@Loyalsoldier/v2ray-rules-dat](https://github.com/Loyalsoldier/v2ray-rules-dat)
